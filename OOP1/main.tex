@@ -30,12 +30,21 @@
 			float&Kommazahl 32 Bit&0.1f, 2e4f\\
 			double&Kommazahl 64 Bit&0.1, 2e4\\
 		\end{tabular}
+	\subsection{Wrapper Klassen}
+	\begin{lstlisting}
+	// Einfach erster Buchstaben gross, ausser:
+	// int -> Integer und char -> Character
+	// Referenz-Typen -> for Generics
+	// Can be null
+	Integer boxed = Integer.valueof(5);
+	int unboxed = boxed.intValue();
+	\end{lstlisting}
 		\subsubsection{Specials}
 		\begin{lstlisting}
 a[double - int] // cannot convert double to int
 0/0 -> ArithmeticException div by zero
 3.0/0 -> Double.POSITIVE_INFINITY
-f + "" != f -> f ist null
+f + "" != f -> f ist jeder beliebige String
 g+1 == g+2 -> g=Double.POSITIVE_INFINITY
 h != h -> h = Float.NaN/Double.NaN
 1 % 0 -> ArithmeticException div by zero
@@ -79,10 +88,13 @@ Math.abs(x - y) < delta // floats vergleichen
 		\begin{itemize}
 			\item \tiny \textcolor{b}{\texttt{equals()}} 
 				\footnotesize ist standardmässig nur Referenzvergleich
-			\item Inhaltlicher Vergleich: Bei \textbf{string} schon implementiert, 
-			aber bei \textbf{Arrays} nicht!
 			\item Immer auch hashCode() überschreiben.
 		\end{itemize}
+\begin{lstlisting}
+	a.equals(b) // 2 Strings
+	Arrays.equals(a,b) // 2 Arrays a,b
+	a.equals(b) // 2 ArrayLists
+\end{lstlisting}
 	
 	\subsection{hashCode}
 		\begin{itemize}
@@ -90,50 +102,15 @@ Math.abs(x - y) < delta // floats vergleichen
 			\item Umkehrung gilt nicht unbedingt
 			\item Ungleiche Objekte können gleichen HashCode haben
 		\end{itemize}
-	
-
 	\subsection{Overloading, Overriding \& Hiding}
 	\begin{enumerate}
 		\item Statischer Typ (links) für Overloading
 		\item (null) $\rightarrow$ spezifischster wählen
 		\item Dynamischer Typ (rechts) für Overriding
 	\end{enumerate}
-	\textbf{Overloading:} Gleiche Methode wird mit anderem Typ überschrieben.\\
-	\textbf{Overriding:} Gleiche Methode wird 1:1 überschrieben. (@Override)
-	
-	Beachte noch folgendes Beispiel:
-	\begin{lstlisting}
-class Base { 
-	public String name = "Base";
-}
-class Sub extends Base {
-	public String name = "Sub";
-	
-	void x(Base other) {
-		var x = name // "Sub"
-		var y = other.name // "Base"
-	}
-}
-Base b = new Sub();
-var x = b.name // "Base" !
-	\end{lstlisting}
-	
-	\columnbreak
-	
-	\subsection{Imports und Packages}
-		\subsubsection{Import on Demand}
-		\begin{itemize}
-			\item \tiny \textcolor{b}{\texttt{import drawing.figures.*}} \footnotesize
-			\item Alle public-Deklarationen im Paket (Wildcard)
-			\item Keine Sub-Packages davon
-		\end{itemize}
-		\subsubsection{Single Type Import}
-		\begin{itemize}
-			\item \tiny \textcolor{b}{\texttt{import drawing.figures.Rectangle}} \footnotesize
-			\item Nur Klasse Rectangle des Packages
-			\item Hat Vorrang gegen{\"u}ber Import on Demand
-		\end{itemize}
-	
+	\textbf{Overloading:} Gleiche Methode wird mit anderem Typ überschrieben. Die \textbf{spezifischere} Funktion wird gewählt. f spezifischer als g, bedeutet alle möglichen Anufrufe von f passen auch für g, aber nicht umgekehrt. -> Entscheidung bei Compilezeit \\
+	\textbf{Overriding:} Gleiche Methode wird 1:1 überschrieben. -> Entscheidung in Laufzeit (nennt man Dynamic Call/Dispatch oder Virtual Call) (@Override) \\
+	\textbf{Hiding:} Zwei Variablen mit selbem Namen in Klasse und Subklasse. Dann muss mit super.variable. super geht nur eine Stufe, sonst muss man mit z.b. ((Vehicle)this).variable zugreifen.
 	
 	\subsection{Exceptions}
 	\begin{lstlisting}
@@ -144,6 +121,10 @@ if (s == null) {
 		\end{lstlisting}
 		
 		\subsubsection{Exceptions behandeln}
+		\begin{itemize}
+			\item Die Reihenfolge ist wichtig, die spezifizität ist egal. Der erste passende Catch block wird genutzt.
+			\item Auch wenn ein Error im try/catch nicht gecatched wird, wird das finally ausgeführt.
+		\end{itemize}
 		\begin{lstlisting}
 try {
 	 /* regular code */ 
@@ -176,9 +157,18 @@ String clip(String s) throws StringClipException {
 		\begin{itemize}
 			\item Keine throws-Deklaration/Behandlung nötig
 			\item Wird nicht vom Compiler geprüft
-			\item \tiny \texttt{RuntimeException, NullPointerException, IndexOutOfBoundsException, Error}
+			\item Also alle Subtypes von \textbf{RuntimeException} (NullPointerException, IndexOutOfBoundsException, ...) und  \textbf{Error} (OutOfMemory, StackOverflow, ...)
 		\end{itemize}
-		
+		\subsubsection{Exceptions bei vererbten Methoden (Overrides)}
+		\begin{lstlisting}
+// Basisklasse/Interface
+void method() throws ExceptionType
+//Subklasse: 4 Possible Overrides
+void method() throws ExceptionType //(same)
+void method() // Weglassen
+void method() thorws SubExceptionType //Subtype
+void method() throws RunTimeException //unchecked
+		\end{lstlisting}
 	
 \section{Vererbung}
 	\subsubsection{Abstract Class}
@@ -227,10 +217,6 @@ public interface Vehicle{...}
 public class Car implements Vehicle{...}
 			\end{lstlisting}
 	
-	
-	\columnbreak
-	
-	
 	\subsection{Default Methods}
 	\begin{itemize}
 		\item Falls Kollisionen bei Mehrfachvererbung 
@@ -245,7 +231,20 @@ interface Vehicle {
 		\end{lstlisting}
 
 
-
+	\subsection{Enum}
+\begin{lstlisting}
+	public enum Weekday {
+		MONDAY(true), TUESDAY(true), WEDNESDAY(true), THURSDAY(true), FRIDAY(true), SATURDAY(true), SUNDAY(true)
+		
+		public boolean workDay;		
+		Weekday(boolean workDay){
+			this.workDay = workDay;
+		}
+		public boolean isWorkDay() {
+			return workDay;
+		}
+	}
+\end{lstlisting}
 
 
 	\section{Collections}
@@ -255,7 +254,6 @@ interface Vehicle {
 	var array = new int[] { 1, 2, 3};
 	int array[] = { 1, 2, 3 };
 	var array = new int[3]; // empty
-	
 		\end{lstlisting}
 	
 	\subsection{List}
@@ -268,7 +266,7 @@ interface Vehicle {
 				\item remove(), contains(): langsam
 			\end{itemize}
 			\begin{lstlisting}
-ArrayList<String> stringList = new ArrayList<>();
+List<String> stringList = new ArrayList<>();
 List.of(array); // Create list out of array
 	stringList.add("OO"); //Add Element
 	stringList.add(0, "Bsys1"); //Add @ pos 0
@@ -277,6 +275,7 @@ List.of(array); // Create list out of array
 	boolean b = stringList.contains("CN1")
 	stringList.remove("ICTh");
 	stringList.remove(1); //remove @ pos 1
+	people.removeAll(group, x -> x.getAge() > 65);
 			\end{lstlisting}
 
 		\subsubsection{LinkedList}
@@ -293,7 +292,6 @@ List<String> firstList = new LinkedList<>();
 	//Gleiche Funktionen wie ArrayList
 		\end{lstlisting}
 	
-	
 		\subsubsection{Queue / Deques}
 		\begin{itemize}
 			\item Verkettete Liste der Elemente
@@ -302,21 +300,28 @@ List<String> firstList = new LinkedList<>();
 			\item Intern Doppelt verkettet
 		\end{itemize}
 		\begin{lstlisting}
-Deque<String> queue = new LinkedList<>();
-	queue.addLast(elem);
-	queue.addFirst(elem);
-	queue.removeFirst(elem);
-	queue.removeLast(elem);
+ArrayDeque<Type> animal = new ArrayDeque<>();
+queue.addLast(elem);
+queue.addFirst(elem);
+queue.removeFirst(elem);
+queue.removeLast(elem);
+queue.clear(); //remove all
+queue.peek() //Get first el, counter to peekLast()
 		\end{lstlisting}
 
 	\subsubsection{Stack}
 	\begin{lstlisting}
-		var stack = new Stack<E>();
-		var poppedEl = stack.pop();
-		var pushedItem = stack.push(el);
-		var isEmpty = stack.empty();
+//Better to use Deque instead!
+var stack = new Stack<E>();
+var pushedItem = stack.push(el);
+var poppedEl = stack.pop(); //get and remove top el
+var el = stack.peek() //get top el (no remove)
+var isEmpty = stack.empty();
+stack.isEmpty(), stack.isFull() //2 booleans
+int pos = stack.search("Test") // Pos of elem
 	\end{lstlisting}
-
+	
+	\columnbreak
 
 	\subsection{Set}
 		\begin{itemize}
@@ -332,14 +337,14 @@ Deque<String> queue = new LinkedList<>();
 		\end{itemize}
 		\begin{lstlisting}
 Set<String> otherSet = new HashSet<>();
-Set<String> s = new HashSet<>(list);
-	set.add(elem);
-	set.addAll(list); //Collection of elem
-	set.size();
-	set.remove(elem);
-	set.isEmpty();
-	set.contains(elem)
-	String[] a = (String[]) set.toArray();
+Set<String> s = new HashSet<>(list); //from list
+	set.add(elem); //Add one
+	set.remove(elem); //Remove one
+	set.size(); //Get Length
+	set.addAll(list); //Add Collection of elem
+	set.isEmpty(); // Empty?
+	set.contains(elem) // Contains
+	String[] a = (String[]) set.toArray(); //Convert
 		\end{lstlisting}
 		\subsubsection{TreeSet}
 		\begin{itemize}
@@ -368,12 +373,13 @@ Map<Integer, String> bachelors = new TreeMap<>();
 	map.containsValue(value);
 	String x = map.get(20000);
 	for (int number : map.keySet()) { 
-		// print all keys
 		System.out.println(number);
 	}
 	for (String value : map.values()) { 
-		// print all values
 		System.out.println(value);
+	}
+	for (var entry: map.entrySet()){
+		//entry.getKey() and entry.getValue()
 	}
 		\end{lstlisting}
 		\subsubsection{HashMap}
@@ -386,7 +392,40 @@ Map<Integer, String> bachelors = new TreeMap<>();
 Map<Integer, String> map = new HashMap<>();
 // Gleiche Funktionen wie TreeMap
 		\end{lstlisting}
+	\subsection{Iterator}
+	\begin{lstlisting}
+	var it = stringList.iterator();
+	while (it.hasNext()){
+		String elem = it.next();
+		if(elem.equals("test123")){
+			it.remove(); // geht nicht bei enhanced for
+		}
+	}
+	\end{lstlisting}
 
+\section{Records}
+	\begin{itemize}
+		\item Wie eine Klasse mit automatisch erstelltem Konsturktur, equals, hashCode, toString und getter (keine Setter, da nicht veränderbar)
+		\item Kann noch mehr Methoden enthalten
+		\item Konstruktur vom Compiler kann werden
+		\item Statische Vars erlaubt, Instanz-Vars nicht
+	\end{itemize}
+	\begin{lstlisting}
+	public record Point(int x, int y) {
+		private static final int INITIAL = 0;
+		
+		public Point() {
+			this(INITIAL, INITIAL);
+		}
+	}
+	\end{lstlisting}
+
+\section{Annotations}
+	\begin{itemize}
+	\item Starten mit "@", Infos fü den Compiler
+	\item Aendern nicht was der Code macht
+	\item Der Compiler verarbeitet diese durch Annotation Processors. So kann auch neuer Sourcecode oder so erzeugt werden (z.B. mit Lombok).
+\end{itemize}
 
 \section{Stream API}
 	\subsection{Zwischenoperationen}
@@ -417,20 +456,22 @@ Map<Integer, String> map = new HashMap<>();
 			\item \tiny \textcolor{b}{\texttt{min(), max()}}
 				\footnotesize Mit Comparator Argument ausser schon korrekt gemapped. Als Optional.
 			\item \tiny \textcolor{b}{\texttt{average()}}
-				\footnotesize Nur bei int, long, double. Als Optional.
+				\footnotesize Nur bei int, long, double. Optional.
 			\item \tiny \textcolor{b}{\texttt{sum()}}
 				\footnotesize Nur bei int, long, double.
 			\item \tiny \textcolor{b}{\texttt{findAny()}}
 				\footnotesize Gibt irgendein Element als Optional
 			\item \tiny \textcolor{b}{\texttt{findFirst()}}
 				\footnotesize Gibt erstes Element als Optional
+			\item \tiny \textcolor{b}{\texttt{allMatch(),anyMatch(),noneMatch()}}
+			\footnotesize Prüfen ob auf alle/irgendein/keine Prädikate etwas zutrifft.
 		\end{itemize}
 	\subsection{Optional}
 		\begin{itemize}
 			\item \tiny \textcolor{b}{\texttt{isPresent()}}
-				\footnotesize true wenn Element vorhanden ist
+				\footnotesize true wenn Element vorhanden
 			\item \tiny \textcolor{b}{\texttt{isEmpty()}}
-				\footnotesize true wenn \textbf{kein} Element vorhanden ist
+				\footnotesize true wenn \textbf{kein} Element vorhanden
 			\item \tiny \textcolor{b}{\texttt{get()}}
 				\footnotesize Gibt Element. \textbf{Exception} wenn empty.
 		\end{itemize}
@@ -444,48 +485,46 @@ Person[] arr = peopleStream.toArray(Person[]::new);
 List<Person> list = peopleStream.toList();
 		\end{lstlisting}	
 	
-		\subsection{Lambda Beispiele}
+		\subsection{Lambda, Stream Beispiele}
 	\begin{lstlisting}
 Arrays.stream(people) // Array zu stream
+people.stream() //Collections zu streams;
+IntStream.range(1, 100) // Zahlen von bis 100
+IntStream.iterate(2, i -> i + 1); // Zahlen ab 2
+Stream.of(2,3,5,7) // Eigene Aufzaehlung
+Stream.concat(stream1, stream2) // 1 gefolgt von 2
+stream().forEach(System.out::println); //print all
 
-stream().forEach(System.out::println); // alles ausgeben
-
-stream().sort((p1, p2) -> 
-Integer.compare(p1.getAge(), p2.getAge()))
-
-stream().filter(p -> p.getAge() >= 18)
+stream().sort((p1, p2) -> { 
+	return Integer.compare(p1.getAge(), p2.getAge());
+	//Oder
+	return p1.getName().compareTo(p2.getName());
+});
 
 stream().filter(p -> p instanceof House)
-
-stream().filter(p -> p.getGender
-.equals(Gender.FEMALE))
-
 stream().map(p -> p.getName()) // to String
-
 stream().mapToInt(i -> i).sum(); // Sum
 	\end{lstlisting}
-	\columnbreak % Kind of a hack
 	\begin{lstlisting}
+		
 // Top 10 earner
 people.stream()
 .sorted(Comparator.comparing(
 Person::getSalary).reversed())
-.mapToInt(p -> p.getSalary())
-.limit(10)
+.mapToInt(p -> p.getSalary()).limit(10)
 
+//Multiple comparisons
+.sorted(Comparator.coparing(...).thenComparing(...))
 
 // get Max Age from People in Zurich
 people.stream()
 .filter(p -> p.getCity().equals("Zuerich"))
-.mapToInt(p -> p.getAge())
-.max()
-.getAsInt();
+.mapToInt(p -> p.getAge()).max().getAsInt();
 
 // get Average Age of Male
 var x = people.stream()
 .filter((p) -> p.getGender().equals(Gender.MALE))
-.mapToInt(p -> p.getAge())
-.average();
+.mapToInt(p -> p.getAge()).average();
 
 // Get all female Names with 3 or less Characters
 people.stream()
@@ -496,8 +535,7 @@ people.stream()
 // Durchschnittsalter pro Ort (mittels Collector)
 people.stream()
 .collect(Collectors.groupingBy(Person::getCity, Collectors.averagingInt(Person::getAge)))
-.forEach((city, age) -> 
-	System.out.println(city + " " + age));
+.forEach((city, age) -> System.out.println(city));
 
 // Gruppieren
 Map<Integer, List<Person>> peopleByAge = 
@@ -505,15 +543,6 @@ people.stream()
 .collect(Collectors.groupingBy(Person::getAge));
 		
 	\end{lstlisting}
-	
-	\subsubsection{Stream Beispiele}
-	\begin{lstlisting}
-people.stream().map(p->p.name)
-IntStream.range(1, 100) // Zahlen von bis 100
-Stream.of(2,3,5,7) // Eigene Aufzaehlung
-Stream.concat(stream1, stream2) // 1 gefolgt von 2
-	\end{lstlisting}
-
 
 \section{Beispiele}
 
@@ -535,11 +564,8 @@ switch(x) {
 	\subsubsection{for loop}
 	\begin{lstlisting}
 	for(int i = 0; i < list.size(); i++) {}
-	
 	for(var el : list) {}
-	
 	for(var el : set) {}
-	
 	for(var el : map.entrySet()) {
 		var k = el.getKey();
 		var v = el.getValue();
@@ -565,26 +591,6 @@ switch(x) {
 	}
 	\end{lstlisting}
 
-	\columnbreak
-
-	\subsubsection{Alle Wörter aus Buchstaben generieren}
-		\begin{lstlisting}
-Set<String> generateWords(Set<Character> input) { 
-	Set<String> result = new HashSet<>();
-	if (input.size() == 0) { 
-		result.add(""); 
-	}
-	for (Character letter : input) {
-		Set<Character> remainder = new HashSet<>(input); 
-		remainder.remove(letter);
-		for (String word : generateWords(remainder)) {
-			result.add(word + letter);
-		}
-	}
-	return result;
-}
-		\end{lstlisting}
-	
 	\subsubsection{Substring / Split}
 		\begin{lstlisting}
 int number = Integer.parseInt(line.substring(0, 3));
@@ -762,6 +768,7 @@ public class Train {
 	
 	\subsubsection{Compare To}
 		\begin{lstlisting}
+//Dieses Interface gibts in Java schon
 @FunctionalInterface
 interface Comparable<T> {
 	int compareTo(T other); }
@@ -832,22 +839,7 @@ public boolean equals(Object obj) {
 public int hashCode() {
 	return Objects.hash(firstName, lastName);
 }
-		\end{lstlisting}
-	
-	
-	\subsection{Enum}
-	\begin{lstlisting}
-public enum Weekday {
-	MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY 
-	
-	public boolean isWeekend() {
-		return this== SATURDAY || this== SUNDAY;
-	}
-}
-	\end{lstlisting}
-
-
-	
+		\end{lstlisting}	
 	\subsection{Diverses Rekursives}
 	\subsubsection{Palindrom}
 	\begin{lstlisting}
@@ -863,7 +855,176 @@ void printPalindroms(String prefix, String suffix, int pos, int length) {
 			suffix : c + suffix, position + 1, length);
 		}}}
 	\end{lstlisting}
+	\subsubsection{Max-Clique (with Subsets of Set)}
+\begin{lstlisting}
+Set<Person> maxClique() {
+	Set<Person> result = new HashSet<>();
+	for (Set<Person> group : allSubsets( new ArrayList<>(allPeople))) {
+		if (isClique(group) && result.size() < group.size()) {
+			result = group;} } return result; }
 
+boolean isClique(Set<Person> group) { 
+	for (Person first : group) {
+		for (Person second : group) {
+			if (first != second && !first.getFriends().contains(second)) {
+				return false; 
+			} 
+		} 
+	} 
+	return true; 
+}
+
+Set<Set<Person>> allSubsets(List<Person> people) { 
+	Set<Set<Person>> result = new HashSet<>(); 
+	result.add(new HashSet<>());
+	for (Person current : people) {
+		List<Person>remaining = new ArrayList<>(people); 
+		remaining.remove(current);
+		for (Set<Person>subset : allSubsets(remaining)){
+			result.add(subset);
+			Set<Person>augmented =new HashSet<>(subset); 
+			augmented.add(current); 
+			result.add(augmented);
+		} 
+	} return result; 
+}
+	
+\end{lstlisting}
+\subsubsection{Fakultät Rekursiv}
+\begin{lstlisting}
+static long fact(long i){
+	if(i==0){return 1;}
+	else{return i * fact(i -1);}
+}
+\end{lstlisting}
+	\subsubsection{Alle möglichen Buchstabenkombinationen}
+	\begin{lstlisting}
+Set<String> generateWords(Set<Character> input) {
+	Set<String> result = new HashSet<>();
+	if (input.size() == 0) {
+		result.add("");
+	}
+	for (Character letter : input) {
+		Set<Character> remainder = new HashSet<>(input);
+		remainder.remove(letter);
+		for (String word : generateWords(remainder)) {
+			result.add(word + letter);
+		}
+	}
+	return result;
+}
+	\end{lstlisting}
+\subsection{Noch mehr Zeugs :-)}
+	\subsubsection{Cluster von Personen}
+\begin{lstlisting}
+boolean isLinked(Person from, Person to){
+	return isLinked(from, to, new HashSet<>()); }
+
+boolean isLinked (Person from, Person to, 
+Set<Person> visited) {
+	if (from == true) { return true;}
+	if (visited.contains(from)){
+		return false; //dont check twice
+	}
+	visited.add(from);
+	for ( Person other: from.knownPeople()){
+		if (isLinked(other, to, visited)){
+			return true	
+		} 
+	}
+	return false; 
+}
+\end{lstlisting}
+\subsubsection{Optimum an Elementen finden}	
+\begin{lstlisting}
+Set<Item> solveRucksack(List<Item> allItems, 
+int maxWeight) { 
+	Set<Set<Item>>allCombinations =powerSet(allItems); 
+	Set<Item> optimum = new HashSet<>();
+	for (Set<Item> combination: allCombinations) {
+		if (totalWeight(combination) <= maxWeight && 
+		totalValue(combination)>totalValue(optimum)){
+			optimum = combination; } } 
+	return optimum; }
+
+Set<Item> solve(List<Item> allItems, int maxWeight){ 
+	Set<Set<Item>>allCombinations =powerSet(allItems); 
+	Set<Item> optimum = new HashSet<>(); //result
+	for (Set<Item> combination: allCombinations) {
+		if (totalWeight(combination) <= maxWeight && 
+		totalValue(combination) >totalValue(optimum)){
+			optimum = combination; }} return optimum;}
+
+int totalValue(Set<Item> combination) {
+	return combination.stream().mapToInt(item -> item.getValue()).sum();}
+
+int totalWeight(Set<Item> combination) {
+	return combination.stream().mapToInt(item -> item.getWeight()).sum();}
+\end{lstlisting}
+\subsubsection{Shortest Roundtrip}	
+\begin{lstlisting}
+List<City> shortestRoundtrip(List<City> visited) {
+	if (visited.size() == allCities.size()) {
+		return visited;
+	}
+	int min = Integer.MAX_VALUE;
+	List<City> best = null;
+	for (City next : allCities) {
+		if (!visited.contains(next)) {
+			List<City> expanded = new ArrayList<>(visited);
+			expanded.add(next);
+			List<City> result = shortestRoundtrip(expanded);
+			int distance = totalDistance(result);
+			if (distance < min) {
+				min = distance;
+				best = result;
+			}
+		}
+	}
+	return best;
+}
+int totalDistance(List<City> roundtrip) {
+	int sum = 0;
+	for (int index = 0; index < roundtrip.size(); index++) {
+		City current = roundtrip.get(index);
+		City next = roundtrip.get((index + 1) % roundtrip.size());
+		sum += current.getConnections().get(next);
+	}
+	return sum;
+}
+//Verwendung:
+List<City> shortest = shortestRoundtrip(Arrays.asList(startCity));
+System.out.println(shortest);
+System.out.println(totalDistance(shortest));
+	\end{lstlisting}
+	
+\subsection{Viel Glück}	
+\begin{lstlisting}
+         r==
+     _  //
+    |_)//(''''':
+      //  \_____:_____.-----.P
+  	 //   | ===  |   /        \
+ .:'//.   \ \=|   \ /  .:'':.
+:' // ':   \ \ ''..'--:'-.. ':
+'. '' .'    \:.....:--'.-'' .'
+ ':..:'                ':..:'
+ 
+\end{lstlisting}
+Java, ach Java, so mächtig und groß,\\
+doch manchmal fühlt es sich an wie ein Floh. \\
+Mit jeder Zeile, die ich tippe und dreh',\\
+wächst der Wunsch, dass es einfacher geh'.\\
+
+Die Syntax streng, die Fehler so klar,\\
+manchmal scheint Java fast unerklärbar.\\
+Exceptions werfen, fangen, behandeln,\\
+will ich doch nur programmieren, nicht rätseln und rändeln.\\
+
+Objektorientierung, ein hehres Ziel,\\
+doch manchmal erscheint es mir zuviel.\\
+Klassen, Vererbung, zu viel des Guten,\\
+kann nicht einfach alles in Funktionen ruhen?\\
 \end{multicols*}
 
 % \input{./appendix.tex}
